@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/scott-cote/plsqlrunner/issues"
   },
-  "homepage": "https://github.com/scott-cote/plsqlrunner#readme"
+  "homepage": "https://github.com/scott-cote/plsqlrunner#readme",
+  "dependencies": {
+    "koa": "^1.2.1"
+  }
 }
