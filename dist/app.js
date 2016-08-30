@@ -14,23 +14,23 @@ var isDbRequest = function(urlString) {
   return url.parse(urlString).pathname.startsWith(config.basePath);
 };
 
-var executeDbRequest = function(cntx) {
-  var packagePath = url.parse(cntx.url).pathname.replace(config.basePath, '').split('.');
+var executeDbRequest = function() {
+  var packagePath = url.parse(this.url).pathname.replace(config.basePath, '').split('.');
   if (packagePath.length < 3) packagePath.unshift(config.defaultSchema);
-  cntx.body = 'executeDbRequest not implemented for '+packagePath.join('.');
+  this.body = 'executeDbRequest not implemented for '+packagePath.join('.');
 };
 
-var proxyAssetRequest = function(cntx) {
+var proxyAssetRequest = function() {
   var assetProtocol = config.secureHost ? 'https://' : 'http://';
-  var assetUrl = assetProtocol+config.host+url.parse(cntx.url).path;
-  cntx.body = 'proxyAssetRequest not implemented for '+assetUrl;
+  var assetUrl = assetProtocol+config.host+url.parse(this.url).path;
+  this.body = 'proxyAssetRequest not implemented for '+assetUrl;
 };
 
-app.use(function *(){
+app.use(function *() {
   if (isDbRequest(this.url)) {
-    return executeDbRequest(this);
+    return executeDbRequest.call(this);
   } else {
-    return proxyAssetRequest(this);
+    return proxyAssetRequest.call(this);
   }
 });
 
