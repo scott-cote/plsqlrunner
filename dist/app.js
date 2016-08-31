@@ -1,6 +1,8 @@
 var koa = require('koa');
 var path = require('path');
 var url = require('url');
+var http = require('http');
+var https = require('https');
 var app = koa();
 
 var runApp = function() {
@@ -21,9 +23,17 @@ var executeDbRequest = function() {
 };
 
 var proxyAssetRequest = function() {
-  var assetProtocol = config.secureHost ? 'https://' : 'http://';
-  var assetUrl = assetProtocol+config.host+url.parse(this.url).path;
-  this.body = 'proxyAssetRequest not implemented for '+assetUrl;
+  return new Promise((resolve, reject) => {
+    var protocol = config.secureHost ? https : http;
+    var assetProtocol = config.secureHost ? 'https://' : 'http://';
+    var assetUrl = assetProtocol+config.host+url.parse(this.url).path;
+    protocol.get(assetUrl, (res) => {
+      //console.log('statusCode:', res.statusCode);
+      //console.log('headers:', res.headers);
+      res.pipe(this.res);
+      res.on('end', resolve);
+    }).on('error', reject);
+  });
 };
 
 app.use(function *() {
