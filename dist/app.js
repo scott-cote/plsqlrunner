@@ -3,42 +3,29 @@ var url = require('url');
 var http = require('http');
 var https = require('https');
 
-var isDbRequest = function(urlString) {
-  return url.parse(urlString).pathname.startsWith(config.basePath);
-};
-
-var executeDbRequest = function(request, response) {
-  return new Promise((resolve, reject) => {
-    var packagePath = url.parse(request.url).pathname.replace(config.basePath, '').split('.');
-    if (packagePath.length < 3) packagePath.unshift(config.defaultSchema);
-    response.end('executeDbRequest not implemented for '+packagePath.join('.'));
-    resolve();
-  });
-};
-
 var buildRequestHeaders = function(headers) {
-	var newHeaders = {};
-	Object.keys(headers).forEach((key) => {
-		if (!['host','connection','referer'].find(element => key === element)) {
-			newHeaders[key] = headers[key];
-		}
-	});
-	newHeaders.host = config.host;
-	if (headers.referer) {
-		var protocol = config.secureHost ? 'https://' : 'http://';
-		newHeaders.referer = protocol+config.host+url.parse(headers.referer).path;
-	}
-	return newHeaders;
+  var newHeaders = {};
+  Object.keys(headers).forEach((key) => {
+    if (!['host','connection','referer'].find(element => key === element)) {
+      newHeaders[key] = headers[key];
+    }
+  });
+  newHeaders.host = config.host;
+  if (headers.referer) {
+    var protocol = config.secureHost ? 'https://' : 'http://';
+    newHeaders.referer = protocol+config.host+url.parse(headers.referer).path;
+  }
+  return newHeaders;
 };
 
 var buildResponseHeaders = function(headers) {
-	var newHeaders = {};
-	Object.keys(headers).forEach((key) => {
-		if (![].find(element => key === element)) {
-			newHeaders[key] = headers[key];
-		}
-	});
-	return newHeaders;
+  var newHeaders = {};
+  Object.keys(headers).forEach((key) => {
+    if (![].find(element => key === element)) {
+      newHeaders[key] = headers[key];
+    }
+  });
+  return newHeaders;
 };
 
 var proxyAssetRequest = function(request, response) {
@@ -60,13 +47,8 @@ var proxyAssetRequest = function(request, response) {
 };
 
 var handleRequest = function(request, response) {
-  if (isDbRequest(request.url)) {
-    executeDbRequest(request, response)
-      .catch((e) => console.log('Execute DB error: '+e));
-  } else {
-    proxyAssetRequest(request, response)
-      .catch((e) => console.log('Proxy asset error: '+e));
-  }
+  proxyAssetRequest(request, response)
+    .catch((e) => console.log('Proxy asset error: '+e));
 };
 
 (function() {
