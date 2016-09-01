@@ -17,6 +17,5 @@
   },
   "homepage": "https://github.com/scott-cote/plsqlrunner#readme",
   "dependencies": {
-    "koa": "^1.2.1"
   }
 }
