@@ -1,3 +1,4 @@
+var fs = require('fs');
 var path = require('path');
 var url = require('url');
 var http = require('http');
@@ -21,9 +22,22 @@ var buildRequestHeaders = function(headers) {
 var proxyCallback = function(request, response, serverResponse) {
   response.statusCode = serverResponse.statusCode;
   Object.keys(serverResponse.headers).forEach((key) => {
-    response.setHeader(key, serverResponse.headers[key]);
+    if (!['connection'].find(element => key === element)) {
+      response.setHeader(key, serverResponse.headers[key]);
+    }
   });
   serverResponse.pipe(response);
+};
+
+var replaceBodyCallback = function(request, response, serverResponse) {
+  response.statusCode = serverResponse.statusCode;
+  Object.keys(serverResponse.headers).forEach((key) => {
+    if (!['connection','content-encoding','transfer-encoding'].find(element => key === element)) {
+      response.setHeader(key, serverResponse.headers[key]);
+    }
+  });
+  var readStream = fs.createReadStream('index.html');
+  readStream.pipe(response);
 };
 
 var proxyAssetRequest = function(request, response) {
