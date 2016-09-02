@@ -11,10 +11,10 @@ var buildRequestHeaders = function(headers) {
       newHeaders[key] = headers[key];
     }
   });
-  newHeaders.host = config.host;
+  newHeaders.host = config.profiles[0].host;
   if (headers.referer) {
-    var protocol = config.secureHost ? 'https://' : 'http://';
-    newHeaders.referer = protocol+config.host+url.parse(headers.referer).path;
+    var protocol = config.profiles[0].secureHost ? 'https://' : 'http://';
+    newHeaders.referer = protocol+config.profiles[0].host+url.parse(headers.referer).path;
   }
   return newHeaders;
 };
@@ -42,9 +42,9 @@ var replaceBodyCallback = function(request, response, serverResponse) {
 
 var proxyAssetRequest = function(request, response) {
   return new Promise((resolve, reject) => {
-    var protocol = config.secureHost ? https : http;
+    var protocol = config.profiles[0].secureHost ? https : http;
     protocol.request({
-      host: config.host,
+      host: config.profiles[0].host,
       path: url.parse(request.url).path,
       headers: buildRequestHeaders(request.headers)
     }, (serverResponse) => {
