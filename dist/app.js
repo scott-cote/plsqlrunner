@@ -18,14 +18,12 @@ var buildRequestHeaders = function(headers) {
   return newHeaders;
 };
 
-var buildResponseHeaders = function(headers) {
-  var newHeaders = {};
-  Object.keys(headers).forEach((key) => {
-    if (![].find(element => key === element)) {
-      newHeaders[key] = headers[key];
-    }
+var proxyCallback = function(request, response, serverResponse) {
+  response.statusCode = serverResponse.statusCode;
+  Object.keys(serverResponse.headers).forEach((key) => {
+    response.setHeader(key, serverResponse.headers[key]);
   });
-  return newHeaders;
+  serverResponse.pipe(response);
 };
 
 var proxyAssetRequest = function(request, response) {
@@ -35,13 +33,9 @@ var proxyAssetRequest = function(request, response) {
       host: config.host,
       path: url.parse(request.url).path,
       headers: buildRequestHeaders(request.headers)
-    }, (res) => {
-      response.statusCode = res.statusCode;
-      var responseHeaders = buildResponseHeaders(res.headers);
-      Object.keys(responseHeaders).forEach((key) => {
-        response.setHeader(key, responseHeaders[key]);
-      });
-      res.on('end', resolve).on('error', reject).pipe(response);
+    }, (serverResponse) => {
+      serverResponse.on('end', resolve).on('error', reject);
+      proxyCallback(request, response, serverResponse)
     }).on('error', reject).end();
   });
 };
