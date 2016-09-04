@@ -19,37 +19,16 @@ var buildRequestHeaders = function(headers) {
   return newHeaders;
 };
 
-var proxyCallback = function(request, response, serverResponse) {
-  response.statusCode = serverResponse.statusCode;
-  Object.keys(serverResponse.headers).forEach((key) => {
-    if (!['connection'].find(element => key === element)) {
-      response.setHeader(key, serverResponse.headers[key]);
-    }
-  });
-  serverResponse.pipe(response);
-};
-
-var replaceBodyCallback = function(request, response, serverResponse) {
-  response.statusCode = serverResponse.statusCode;
-  Object.keys(serverResponse.headers).forEach((key) => {
-    if (!['connection','content-encoding','transfer-encoding'].find(element => key === element)) {
-      response.setHeader(key, serverResponse.headers[key]);
-    }
-  });
-  var readStream = fs.createReadStream('index.html');
-  readStream.pipe(response);
-};
-
-var proxyRequest = function(request, response) {
+var proxyRequest = function(callback) {
   return new Promise((resolve, reject) => {
     var protocol = profile.secureHost ? https : http;
     protocol.request({
       host: profile.host,
-      path: url.parse(request.url).path,
-      headers: buildRequestHeaders(request.headers)
+      path: url.parse(this.request.url).path,
+      headers: buildRequestHeaders(this.request.headers)
     }, (serverResponse) => {
       serverResponse.on('end', resolve).on('error', reject);
-      proxyCallback(request, response, serverResponse)
+      callback(this.request, this.response, serverResponse)
     }).on('error', reject).end();
   });
 };
