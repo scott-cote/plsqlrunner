@@ -11,7 +11,9 @@ module.exports = function(info) {
     serverResponse.pipe(response);
   };
 
-  return function() {
+  info.handleRequest = function() {
     return this.proxyRequest(proxyCallback);
   };
+
+  return info;
 };

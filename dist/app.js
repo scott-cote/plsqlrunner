@@ -41,7 +41,7 @@ var pluginMatcher = function(request) {
 
 var handleRequest = function(request, response) {
   var plugin = plugins.find(pluginMatcher(request)) || defaultPlugin;
-  plugin.call({ request: request, response: response, proxyRequest: proxyRequest })
+  plugin.handleRequest.call({ request: request, response: response, proxyRequest: proxyRequest })
     .catch((e) => console.log('Error: '+e));
 };
 

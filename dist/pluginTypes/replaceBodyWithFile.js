@@ -13,7 +13,9 @@ module.exports = function(info) {
     readStream.pipe(response);
   };
 
-  return function() {
+  info.handleRequest = function() {
     return this.proxyRequest(replaceBodyCallback);
   };
+
+  return info;
 };
