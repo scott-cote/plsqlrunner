@@ -37,8 +37,13 @@ var pluginMatcher = function(request) {
   return function(plugin) {
     if (plugin.matchType === 'urlPath') {
       return url.parse(request.url).path === plugin.matchValue;
+    } else if (plugin.matchType === 'urlPathname') {
+      return url.parse(request.url).pathname === plugin.matchValue;
+    } else if (plugin.matchType === 'function' && plugin.matchFunction) {
+      return plugin.matchFunction(request); 
+    } else {
+      return false;
     }
-    return false;
   };
 }
 
