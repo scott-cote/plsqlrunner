@@ -40,7 +40,7 @@ var replaceBodyCallback = function(request, response, serverResponse) {
   readStream.pipe(response);
 };
 
-var proxyAssetRequest = function(request, response) {
+var proxyRequest = function(request, response) {
   return new Promise((resolve, reject) => {
     var protocol = profile.secureHost ? https : http;
     protocol.request({
@@ -62,7 +62,7 @@ var pluginMatcher = function(request) {
 
 var handleRequest = function(request, response) {
   var plugin = plugins.find(pluginMatcher(request)) || defaultPlugin;
-  plugin.handleRequest(request, response)
+  plugin.call({ request: request, response: response, proxyRequest: proxyRequest })
     .catch((e) => console.log('Error: '+e));
 };
 
@@ -71,10 +71,8 @@ var handleRequest = function(request, response) {
   var configPath = path.join(homePath, '.plsqlrunner', 'config.json');
   config = require(configPath);
   profile = config.profiles[0];
-  plugins = profile.plugins || [];
-  defaultPlugin = {
-    handleRequest: proxyAssetRequest
-  };
+  plugins = (profile.plugins || []).map(plugin => require('./pluginTypes/'+plugin.type+'.js')(plugin));
+  defaultPlugin = require('./pluginTypes/proxy.js')({ matchType: 'default', type: 'proxy' });
   http.createServer(handleRequest).listen(5150, function() {
     console.log("PLSQLRunner listening on: http://localhost:5150");
   });
