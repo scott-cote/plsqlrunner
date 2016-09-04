@@ -11,10 +11,10 @@ var buildRequestHeaders = function(headers) {
       newHeaders[key] = headers[key];
     }
   });
-  newHeaders.host = config.profiles[0].host;
+  newHeaders.host = profile.host;
   if (headers.referer) {
-    var protocol = config.profiles[0].secureHost ? 'https://' : 'http://';
-    newHeaders.referer = protocol+config.profiles[0].host+url.parse(headers.referer).path;
+    var protocol = profile.secureHost ? 'https://' : 'http://';
+    newHeaders.referer = protocol+profile.host+url.parse(headers.referer).path;
   }
   return newHeaders;
 };
@@ -42,9 +42,9 @@ var replaceBodyCallback = function(request, response, serverResponse) {
 
 var proxyAssetRequest = function(request, response) {
   return new Promise((resolve, reject) => {
-    var protocol = config.profiles[0].secureHost ? https : http;
+    var protocol = profile.secureHost ? https : http;
     protocol.request({
-      host: config.profiles[0].host,
+      host: profile.host,
       path: url.parse(request.url).path,
       headers: buildRequestHeaders(request.headers)
     }, (serverResponse) => {
@@ -54,15 +54,27 @@ var proxyAssetRequest = function(request, response) {
   });
 };
 
+var pluginMatcher = function(request) {
+  return function(plugin) {
+    return false;
+  };
+}
+
 var handleRequest = function(request, response) {
-  proxyAssetRequest(request, response)
-    .catch((e) => console.log('Proxy asset error: '+e));
+  var plugin = plugins.find(pluginMatcher(request)) || defaultPlugin;
+  plugin.handleRequest(request, response)
+    .catch((e) => console.log('Error: '+e));
 };
 
 (function() {
   var homePath = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
   var configPath = path.join(homePath, '.plsqlrunner', 'config.json');
   config = require(configPath);
+  profile = config.profiles[0];
+  plugins = profile.plugins || [];
+  defaultPlugin = {
+    handleRequest: proxyAssetRequest
+  };
   http.createServer(handleRequest).listen(5150, function() {
     console.log("PLSQLRunner listening on: http://localhost:5150");
   });
