@@ -35,6 +35,9 @@ var proxyRequest = function(callback) {
 
 var pluginMatcher = function(request) {
   return function(plugin) {
+    if (plugin.matchType === 'urlPath') {
+      return url.parse(request.url).path === plugin.matchValue;
+    }
     return false;
   };
 }

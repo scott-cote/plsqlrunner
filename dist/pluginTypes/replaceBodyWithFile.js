@@ -9,7 +9,7 @@ module.exports = function(info) {
         response.setHeader(key, serverResponse.headers[key]);
       }
     });
-    var readStream = fs.createReadStream('index.html');
+    var readStream = fs.createReadStream(info.config.filePath);
     readStream.pipe(response);
   };
 
